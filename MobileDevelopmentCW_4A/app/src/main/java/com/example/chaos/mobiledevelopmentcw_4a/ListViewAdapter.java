@@ -25,27 +25,27 @@ public class ListViewAdapter extends BaseAdapter{
     /*** Declarations (Lists) ***/
     public static ArrayList<String> nameLst = new ArrayList<>();
     public static ArrayList<Integer> initLst = new ArrayList<>();
-    public static ArrayList<Integer> pasPerLst = new ArrayList<>();
+    /*public static ArrayList<Integer> pasPerLst = new ArrayList<>();*/
 
     /*** Declarations (Variables) ***/
     Activity context;
     String name[];
-    Integer pasPer[];
+    /*Integer pasPer[];*/
     Integer init[];
     int posPlus, posMinus;
     boolean plus, minus;
 
     /*** Get and Set passed values ***/
-    public ListViewAdapter(Activity context, String[] name, Integer[] pasPer, Integer[] init, ArrayList<String> nameLst, ArrayList<Integer> initLst, ArrayList<Integer> pasPerLst)
+    public ListViewAdapter(Activity context, String[] name/*, Integer[] pasPer*/, Integer[] init, ArrayList<String> nameLst, ArrayList<Integer> initLst/*, ArrayList<Integer> pasPerLst*/)
     {
         super();
         this.context = context;
         this.name = name;
-        this.pasPer = pasPer;
+        /*this.pasPer = pasPer;*/
         this.init = init;
         this.nameLst = nameLst;
         this.initLst = initLst;
-        this.pasPerLst = pasPerLst;
+        /*this.pasPerLst = pasPerLst;*/
     }
 
     public int getCount()
@@ -65,7 +65,7 @@ public class ListViewAdapter extends BaseAdapter{
     private class ViewHolder
     {
         /*** Declarations (UI) ***/
-        TextView txtName, txtPasPer;
+        TextView txtName/*, txtPasPer*/;
         EditText txtInitiative;
     }
 
@@ -80,7 +80,7 @@ public class ListViewAdapter extends BaseAdapter{
             convertView = inflater.inflate(R.layout.row, null);
             holder = new ViewHolder();
             holder.txtName = (TextView) convertView.findViewById(R.id.txtName);
-            holder.txtPasPer = (TextView) convertView.findViewById(R.id.txtPasPer);
+            /*holder.txtPasPer = (TextView) convertView.findViewById(R.id.txtPasPer);*/
             holder.txtInitiative= (EditText) convertView.findViewById(R.id.txtInitiative);
             convertView.setTag(holder);
         } else {
@@ -136,19 +136,19 @@ public class ListViewAdapter extends BaseAdapter{
     public void ActualAdd(ViewHolder holder, int position)
     {
         holder.txtName.setText(name[position]);
-        holder.txtPasPer.setText(pasPer[position].toString());
+        /*holder.txtPasPer.setText(pasPer[position].toString());*/
         holder.txtInitiative.setText(init[position].toString());
         if (minus)
         {
             holder.txtName.setText(name[posMinus]);
-            holder.txtPasPer.setText(pasPer[posMinus].toString());
+            /*holder.txtPasPer.setText(pasPer[posMinus].toString());*/
             holder.txtInitiative.setText(init[posMinus].toString());
             minus = false;
         }
         if (plus)
         {
             holder.txtName.setText(name[posPlus]);
-            holder.txtPasPer.setText(pasPer[posPlus].toString());
+            /*holder.txtPasPer.setText(pasPer[posPlus].toString());*/
             holder.txtInitiative.setText(init[posPlus].toString());
             plus = false;
         }
@@ -166,9 +166,9 @@ public class ListViewAdapter extends BaseAdapter{
         init[position] = init[posMinus];
         init[posMinus] = temp2;
 
-        temp3 = pasPer[position];
+        /*temp3 = pasPer[position];
         pasPer[position] = pasPer[posMinus];
-        pasPer[posMinus] = temp3;
+        pasPer[posMinus] = temp3;*/
     }
 
     public void SwitcherooPlus(int position, int posPlus)
@@ -183,23 +183,23 @@ public class ListViewAdapter extends BaseAdapter{
         init[position] = init[posPlus];
         init[posPlus] = temp2;
 
-        temp3 = pasPer[position];
+        /*temp3 = pasPer[position];
         pasPer[position] = pasPer[posPlus];
-        pasPer[posPlus] = temp3;
+        pasPer[posPlus] = temp3;*/
     }
 
     public void DeleteCombatant(int position)
     {
         nameLst.remove(position);
         initLst.remove(position);
-        pasPerLst.remove(position);
+        /*pasPerLst.remove(position);*/
 
         name = nameLst.toArray(new String[0]);
         init = initLst.toArray(new Integer[0]);
-        pasPer = pasPerLst.toArray(new Integer[0]);
+        /*pasPer = pasPerLst.toArray(new Integer[0]);*/
 
         MainMenu.nameArr = name;
         MainMenu.initArr = init;
-        MainMenu.pasPerArr = pasPer;
+        /*MainMenu.pasPerArr = pasPer;*/
     }
 }
