@@ -1,10 +1,14 @@
 package com.example.chaos.mobiledevelopmentcw_4a;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -19,16 +23,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class MainMenu extends AppCompatActivity {
+public class MainMenu extends AppCompatActivity{
 
     /***
      * Declarations (UI)
      ***/
-    Button but1, but2, but5, but6, but8;
+    Button but1, but2, but5, but6, but8, but9;
     ListView lstVw1;
     ListViewAdapter lstVwAda;
-    EditText name, init, pasPer, txtInit;
-    TextView txtName, txtPasPer;
+    EditText name, init, txtInit;
+    TextView txtName, txtRSSLoc;
     private ViewFlipper switcher;
 
     /***
@@ -39,7 +43,6 @@ public class MainMenu extends AppCompatActivity {
     public ArrayList<Integer> pasPerLst = new ArrayList<>();
     public ArrayList<String> tempNameLst = new ArrayList<>();
     public ArrayList<Integer> tempInitLst = new ArrayList<>();
-    public ArrayList<Integer> tempPasPerLst = new ArrayList<>();
 
 
     /***
@@ -47,10 +50,17 @@ public class MainMenu extends AppCompatActivity {
      ***/
     static String[] nameArr;
     String[] tempNameArr;
-    static Integer[] initArr, pasPerArr, tempInitArr, tempPasPerArr;
+    static Integer[] initArr, tempInitArr;
     int count;
     private String tempName;
-    private Integer tempInit, tempPasPer;
+    private Integer tempInit;
+
+    /***
+     * Declarations (Other)
+     ***/
+    SharedPreferences initSharedPrefs;
+    initSaveData initSDPrefs;
+    SharedPreferences mySharedPrefs;
 
     /***
      * When the application loads
@@ -58,6 +68,7 @@ public class MainMenu extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main_menu);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -69,23 +80,30 @@ public class MainMenu extends AppCompatActivity {
 
         /*** Sets up all UI components ***/
         switcher = (ViewFlipper) findViewById(R.id.ViewFlipper);
-        //but1 = (Button) findViewById(R.id.butAdd);
+        but1 = (Button) findViewById(R.id.butBack_Tracker);
         but2 = (Button) findViewById(R.id.butSort);
         but5 = (Button) findViewById(R.id.butConfirm);
-        but6 = (Button) findViewById(R.id.butCancel);
+        but6 = (Button) findViewById(R.id.butBack_AddComb);
         but8 = (Button) findViewById(R.id.butInitTracker);
+        but9 = (Button) findViewById(R.id.butBack_Prefs);
         txtName = (TextView) findViewById(R.id.txtName);
-/*
-        txtPasPer = (TextView) findViewById(R.id.txtPasPer);
-*/
         txtInit = (EditText) findViewById(R.id.txtInitiative);
+        txtRSSLoc = (TextView) findViewById(R.id.txtRSSLocation);
         name = (EditText) findViewById(R.id.editName);
         init = (EditText) findViewById(R.id.editInitiative);
-        //pasPer = (EditText) findViewById(R.id.editPasPer);
         lstVw1 = (ListView) findViewById(R.id.mainListView);
 
-        //Can we remove this from outside the Initiative Tracker?
+        // Load any saved preferences
+        initSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        loadSavedPreferences();
+        Log.e("n","SDOutput msg");
 
+        //Shared Preferences
+        mySharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        initSDPrefs = new initSaveData(mySharedPrefs);
+        initSDPrefs.setDefaultPrefs();
+
+        /*** Handles a floating button to add combatants ***/
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,23 +112,18 @@ public class MainMenu extends AppCompatActivity {
                 if (count > 0) {
                     ArraysToList();
                 }
-                switcher.showNext();
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.addCombatant)));
+
             }
         });
 
-
-        /*** Switch to Add Combatant screen ***/
-        /*
+        /*** Return to Home Screen ***/
         but1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ClearInputs();
-                if (count > 0) {
-                    ArraysToList();
-                }
-                switcher.showNext();
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.MainMenu)));
             }
-        }); */
+        });
 
         /*** Sort all combatants by Initiative (High -> Low) ***/
         but2.setOnClickListener(new View.OnClickListener() {
@@ -130,11 +143,9 @@ public class MainMenu extends AppCompatActivity {
                     MissingName();
                 } else if (init == null) {
                     MissingInit();
-                } /*else if (pasPer == null) {
-                    MissingPasPer();
-                }*/ else {
+                } else {
                     PrepForArrays();
-                    switcher.showPrevious();
+                    switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.TrackerView)));
                     AddToArrays();
                 }
             }
@@ -144,7 +155,7 @@ public class MainMenu extends AppCompatActivity {
         but6.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                switcher.showPrevious();
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.TrackerView)));
             }
         });
 
@@ -153,6 +164,13 @@ public class MainMenu extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.TrackerView)));
+            }
+        });
+
+        but9.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.MainMenu)));
             }
         });
     }
@@ -166,13 +184,11 @@ public class MainMenu extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.PrefsView)));
             return true;
         }
 
@@ -185,7 +201,6 @@ public class MainMenu extends AppCompatActivity {
     public void ClearInputs() {
         name.setText("");
         init.setText("");
-        /*pasPer.setText("");*/
     }
 
     /***
@@ -195,24 +210,21 @@ public class MainMenu extends AppCompatActivity {
         /*** Gets inputs and places them into temporary holders ***/
         tempName = name.getText().toString();
         tempInit = Integer.parseInt(init.getText().toString());
-        /*tempPasPer = Integer.parseInt(pasPer.getText().toString());*/
 
         /*** Adds the temporary holders into the relevant lists ***/
         nameLst.add(tempName);
         initLst.add(tempInit);
-        /*pasPerLst.add(tempPasPer);*/
 
         /*** Overwrites arrays with List data ***/
         nameArr = nameLst.toArray(new String[0]);
         initArr = initLst.toArray(new Integer[0]);
-        /*pasPerArr = pasPerLst.toArray(new Integer[0]);*/
     }
 
     /***
      * Passes arrays into ListViewAdapter
      ***/
     public void AddToArrays() {
-        lstVwAda = new com.example.chaos.mobiledevelopmentcw_4a.ListViewAdapter(this, nameArr, /*pasPerArr,*/ initArr, nameLst, initLst/*, pasPerLst*/);
+        lstVwAda = new com.example.chaos.mobiledevelopmentcw_4a.ListViewAdapter(this, nameArr, initArr, nameLst, initLst);
         lstVw1.setAdapter(lstVwAda);
 
         /*** Gets number of entries ***/
@@ -228,11 +240,9 @@ public class MainMenu extends AppCompatActivity {
     public void ArraysToList() {
         nameLst.clear();
         initLst.clear();
-        /*pasPerLst.clear();*/
 
         nameLst = new ArrayList(Arrays.asList(nameArr));
         initLst = new ArrayList(Arrays.asList(initArr));
-        /*pasPerLst = new ArrayList(Arrays.asList(pasPerArr));*/
     }
 
     /***
@@ -249,23 +259,14 @@ public class MainMenu extends AppCompatActivity {
         Toast.makeText(this, "Please fill in the 'Initiative' section", Toast.LENGTH_SHORT).show();
     }
 
-    /***
-     * Displays a toast when called
-     ***/
-    public void MissingPasPer() {
-        Toast.makeText(this, "Please fill in the 'Passive Perception' section", Toast.LENGTH_SHORT).show();
-    }
-
     public void SortEverything() {
         tempNameArr = Arrays.copyOf(nameArr, nameArr.length);
         tempInitArr = Arrays.copyOf(initArr, initArr.length);
-        /*tempPasPerArr = Arrays.copyOf(pasPerArr, pasPerArr.length);*/
 
         Arrays.sort(tempInitArr, Collections.<Integer>reverseOrder());
 
         tempNameLst.clear();
         tempInitLst.clear();
-        /*tempPasPerLst.clear();*/
 
         int len1, len2;
 
@@ -276,11 +277,9 @@ public class MainMenu extends AppCompatActivity {
             for (int x = 0; x < len2; x++) {
                 if (initLst.get(x) == tempInitArr[i]) {
                     tempNameLst.add(nameLst.get(x));
-                    /*tempPasPerLst.add(pasPerLst.get(x));*/
 
                     initLst.remove(x);
                     nameLst.remove(x);
-                    /*pasPerLst.remove(x);*/
 
                     len1 = tempInitArr.length;
                     len2 = initLst.size();
@@ -289,10 +288,15 @@ public class MainMenu extends AppCompatActivity {
         }
 
         nameArr = tempNameLst.toArray(new String[0]);
-        /*pasPerArr = tempPasPerLst.toArray(new Integer[0]);*/
         initArr = Arrays.copyOf(tempInitArr, tempInitArr.length);
 
         ArraysToList();
         AddToArrays();
+    }
+
+    private void loadSavedPreferences()
+    {
+        txtRSSLoc.setText(txtRSSLoc.getText() + initSharedPrefs.getString("init_RSSFeed", "https://www.reddit.com/r/DnD.rss"));
+
     }
 }
