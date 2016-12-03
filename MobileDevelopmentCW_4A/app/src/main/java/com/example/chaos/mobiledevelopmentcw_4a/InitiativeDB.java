@@ -47,8 +47,8 @@ public class InitiativeDB implements Serializable {
     {
         String combatantData;
         combatantData = "InitiativeDB [combatantID=" + combatantID;
-        combatantData = ", name=" + name;
-        combatantData = ", initValue=" + initValue;
+        combatantData += ", name=" + name;
+        combatantData += ", initValue=" + initValue;
         return combatantData;
     }
 }

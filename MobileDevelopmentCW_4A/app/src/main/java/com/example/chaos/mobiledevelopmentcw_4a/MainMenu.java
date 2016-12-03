@@ -139,7 +139,7 @@ public class MainMenu extends AppCompatActivity{
             e.printStackTrace();
         }
 
-        userInitiatives = dbInitMgr.findStarSign(userInitiatives.getName());
+        //userInitiatives = dbInitMgr.findName(userInitiatives.getName());
 
 
         /*** Return to Home Screen ***/

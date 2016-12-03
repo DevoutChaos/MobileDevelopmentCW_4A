@@ -21,7 +21,7 @@ import java.util.Locale;
 public class InitiativeDBMgr extends SQLiteOpenHelper {
 
     private static final int DB_VER = 1;
-    private static final String DB_PATH = "/data/data/uk.ac.gcu.bl.mondayschild/databases/";
+    private static final String DB_PATH = "/data/data/com.example.chaos.mobiledevelopmentcw_4a/databases/";
     private static final String DB_NAME = "initiative.s3db";
     private static final String TBL_INITIATIVE = "intitiatives";
 
@@ -31,8 +31,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
 
     private final Context appContext;
 
-    public InitiativeDBMgr(Context context, String name,
-                           SQLiteDatabase.CursorFactory factory, int version) {
+    public InitiativeDBMgr(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
         this.appContext = context;
     }
@@ -129,7 +128,6 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
             while ((length = dbInput.read(buffer)) > 0) {
                 dbOutput.write(buffer, 0, length);
             }
-
             //Close the streams
             dbOutput.flush();
             dbOutput.close();
@@ -153,7 +151,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
         db.close();
     }
 
-    public InitiativeDB findStarSign(String name) {
+    public InitiativeDB findName(String name) {
         String query = "Select * FROM " + TBL_INITIATIVE + " WHERE " + COL_NAME+ " =  \"" + name + "\"";
 
         SQLiteDatabase db = this.getReadableDatabase();
