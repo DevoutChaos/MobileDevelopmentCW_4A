@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,6 +57,11 @@ public class MainMenu extends AppCompatActivity{
     int count;
     private String tempName;
     private Integer tempInit;
+
+    /***
+     * Declarations (Database)
+     ***/
+    InitiativeDB userInitiatives;
 
     /***
      * Declarations (Other)
@@ -96,17 +102,17 @@ public class MainMenu extends AppCompatActivity{
         init = (EditText) findViewById(R.id.editInitiative);
         lstVw1 = (ListView) findViewById(R.id.mainListView);
 
-        // Load any saved preferences
+        /*** Load any saved preferences ***/
         initSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         loadSavedPreferences();
         Log.e("n","SDOutput msg");
 
-        //Shared Preferences
+        /***Shared Preferences ***/
         mySharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         initSDPrefs = new initSaveData(mySharedPrefs);
         initSDPrefs.setDefaultPrefs();
 
-        //Dialogue Fragment
+        /*** Dialogue Fragment ***/
         fmAboutDialogue = this.getFragmentManager();
 
         /*** Handles a floating button to add combatants ***/
@@ -122,6 +128,19 @@ public class MainMenu extends AppCompatActivity{
 
             }
         });
+
+        /*** Database handler ***/
+        userInitiatives = new InitiativeDB();
+
+        InitiativeDBMgr dbInitMgr = new InitiativeDBMgr(this,"initiative.s3db",null,1); // Lab 5
+        try {
+            dbInitMgr.dbCreate();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        userInitiatives = dbInitMgr.findStarSign(userInitiatives.getName());
+
 
         /*** Return to Home Screen ***/
         but1.setOnClickListener(new View.OnClickListener() {
