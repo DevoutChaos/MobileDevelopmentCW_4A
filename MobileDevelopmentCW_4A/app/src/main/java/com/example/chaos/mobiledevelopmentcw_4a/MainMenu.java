@@ -1,5 +1,7 @@
 package com.example.chaos.mobiledevelopmentcw_4a;
 
+import android.app.DialogFragment;
+import android.app.FragmentManager;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -61,6 +63,7 @@ public class MainMenu extends AppCompatActivity{
     SharedPreferences initSharedPrefs;
     initSaveData initSDPrefs;
     SharedPreferences mySharedPrefs;
+    FragmentManager fmAboutDialogue;
 
     /***
      * When the application loads
@@ -102,6 +105,9 @@ public class MainMenu extends AppCompatActivity{
         mySharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         initSDPrefs = new initSaveData(mySharedPrefs);
         initSDPrefs.setDefaultPrefs();
+
+        //Dialogue Fragment
+        fmAboutDialogue = this.getFragmentManager();
 
         /*** Handles a floating button to add combatants ***/
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -184,16 +190,21 @@ public class MainMenu extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.PrefsView)));
-            return true;
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.about:
+                // About Dialogue;
+                DialogFragment initAboutDlg = new initAboutDialogue();
+                initAboutDlg.show(fmAboutDialogue, "menu");
+                return true;
+            case R.id.action_settings:
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.PrefsView)));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
-        return super.onOptionsItemSelected(item);
     }
+
 
     /***
      * Resets input fields
