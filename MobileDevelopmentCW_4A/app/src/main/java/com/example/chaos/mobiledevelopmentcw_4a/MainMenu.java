@@ -3,6 +3,7 @@ package com.example.chaos.mobiledevelopmentcw_4a;
 import android.app.DialogFragment;
 import android.app.FragmentManager;
 import android.content.SharedPreferences;
+import android.database.DatabaseUtils;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
@@ -25,13 +26,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
 
 public class MainMenu extends AppCompatActivity{
 
     /***
      * Declarations (UI)
      ***/
-    Button but1, but2, but5, but6, but8, but9;
+    Button but1, but2, but5, but6, but8, but9, but10, but11, but12, but13;
     ListView lstVw1;
     ListViewAdapter lstVwAda;
     EditText name, init, txtInit;
@@ -55,6 +57,7 @@ public class MainMenu extends AppCompatActivity{
     String[] tempNameArr;
     static Integer[] initArr, tempInitArr;
     int count;
+    long noInDB;
     private String tempName;
     private Integer tempInit;
 
@@ -95,6 +98,10 @@ public class MainMenu extends AppCompatActivity{
         but6 = (Button) findViewById(R.id.butBack_AddComb);
         but8 = (Button) findViewById(R.id.butInitTracker);
         but9 = (Button) findViewById(R.id.butBack_Prefs);
+        but10 = (Button) findViewById(R.id.butLoad);
+        but11 = (Button) findViewById(R.id.butBack_DB);
+        but12 = (Button) findViewById(R.id.butBack_SA);
+        but13 = (Button) findViewById(R.id.butRSS);
         txtName = (TextView) findViewById(R.id.txtName);
         txtInit = (EditText) findViewById(R.id.txtInitiative);
         txtRSSLoc = (TextView) findViewById(R.id.txtRSSLocation);
@@ -132,15 +139,27 @@ public class MainMenu extends AppCompatActivity{
         /*** Database handler ***/
         userInitiatives = new InitiativeDB();
 
-        InitiativeDBMgr dbInitMgr = new InitiativeDBMgr(this,"initiative.s3db",null,1); // Lab 5
+        final InitiativeDBMgr dbInitMgr = new InitiativeDBMgr(this,"initiative.s3db",null,1); // Lab 5
         try {
             dbInitMgr.dbCreate();
         } catch (IOException e) {
             e.printStackTrace();
+            Toast.makeText(this, "We have a problem.jpg", Toast.LENGTH_LONG).show();
         }
 
-        //userInitiatives = dbInitMgr.findName(userInitiatives.getName());
+        userInitiatives = dbInitMgr.findCombatant(userInitiatives.getName());
 
+        /*** Parse the RSS feed ***/
+        saRSSDataItem sageAdvice = new saRSSDataItem(); // Lab 6
+        String RSSFeedURL = "http://www.sageadvice.eu/feed/";
+        saAsyncRSSParser rssAsyncParse = new saAsyncRSSParser(this,RSSFeedURL);
+        try {
+            sageAdvice = rssAsyncParse.execute("").get(); // Lab 6
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         /*** Return to Home Screen ***/
         but1.setOnClickListener(new View.OnClickListener() {
@@ -184,7 +203,7 @@ public class MainMenu extends AppCompatActivity{
             }
         });
 
-        /*** Goes to the initiative tracker screen ***/
+        /*** Goes to the initiative tracker screen from the main menu ***/
         but8.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -192,10 +211,45 @@ public class MainMenu extends AppCompatActivity{
             }
         });
 
+        /*** Returns to the main menu from the initiative tracker ***/
         but9.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.MainMenu)));
+            }
+        });
+
+        /*** Goes to the view database screen from the initiative tracker ***/
+        but10.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.DatabaseView)));
+                noInDB = dbInitMgr.CountDatabase();
+                ShowDB();
+            }
+        });
+
+        /*** Returns to the Initiative Tracker from the Database screen ***/
+        but11.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.TrackerView)));
+            }
+        });
+
+        /*** Returns to the main menu from the RSS Feed ***/
+        but12.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.MainMenu)));
+            }
+        });
+
+        /*** Returns to the main menu from the initiative tracker ***/
+        but13.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.RSSView)));
             }
         });
     }
@@ -223,7 +277,6 @@ public class MainMenu extends AppCompatActivity{
                 return super.onOptionsItemSelected(item);
         }
     }
-
 
     /***
      * Resets input fields
@@ -289,6 +342,9 @@ public class MainMenu extends AppCompatActivity{
         Toast.makeText(this, "Please fill in the 'Initiative' section", Toast.LENGTH_SHORT).show();
     }
 
+    /***
+     * Sorts both name and initiative arrays, by initiative, in descending order
+     ***/
     public void SortEverything() {
         tempNameArr = Arrays.copyOf(nameArr, nameArr.length);
         tempInitArr = Arrays.copyOf(initArr, initArr.length);
@@ -327,6 +383,10 @@ public class MainMenu extends AppCompatActivity{
     private void loadSavedPreferences()
     {
         txtRSSLoc.setText(txtRSSLoc.getText() + initSharedPrefs.getString("init_RSSFeed", "https://www.reddit.com/r/DnD.rss"));
+    }
 
+    public void ShowDB()
+    {
+        Toast.makeText(this, "Database holds " + count + " records", Toast.LENGTH_SHORT).show();
     }
 }

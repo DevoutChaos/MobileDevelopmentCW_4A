@@ -130,6 +130,14 @@
             android:text="Back"
             android:layout_alignParentBottom="true"/>
 
+        <Button
+            android:id="@+id/butLoad"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Load"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"/>
+
         <android.support.design.widget.FloatingActionButton
             android:id="@+id/fab"
             android:layout_width="wrap_content"
@@ -138,7 +146,7 @@
             app:srcCompat="@android:drawable/ic_input_add"
             android:layout_marginLeft="@dimen/fab_margin"
             android:layout_marginRight="@dimen/fab_margin"
-            android:layout_marginBottom="15dp"
+            android:layout_marginBottom="60dp"
             android:layout_alignParentBottom="true"
             android:layout_alignParentEnd="true"
             android:layout_marginEnd="15dp" />
@@ -189,5 +197,64 @@
             android:text="Home"
             android:id="@+id/butBack_Prefs"
             android:layout_alignParentBottom="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/DatabaseView">
+        <Button
+            android:id="@+id/butBack_DB"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:layout_alignParentBottom="true"/>
+
+        <ListView
+            android:id="@+id/databaseListView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/txtName2"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/txtInitiative2"
+            android:text="Initiative: "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:layout_alignParentTop="true"
+            android:textSize="24sp"
+            android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:id="@+id/txtName2"
+            android:text="Name: "
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="60dp"
+            android:layout_alignParentTop="true"
+            android:textSize="24sp"
+            android:layout_alignParentStart="true" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/RSSView">
+        <Button
+            android:id="@+id/butBack_SA"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Back"
+            android:layout_alignParentBottom="true"/>
+        <ListView
+            android:id="@+id/saListView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="60dp"
+            android:layout_alignParentTop="true" />
+
     </RelativeLayout>
 </ViewFlipper>

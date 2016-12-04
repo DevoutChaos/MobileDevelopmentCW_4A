@@ -3,6 +3,7 @@ package com.example.chaos.mobiledevelopmentcw_4a;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -30,6 +31,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
     public static final String COL_INITVALUE= "initValue";
 
     private final Context appContext;
+
 
     public InitiativeDBMgr(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);
@@ -88,13 +90,18 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
 
         try{
             String dbPath = DB_PATH + DB_NAME;
+            Log.d("dbCheck", "Trying to find: " + dbPath);
             db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+            Log.d("dbCheck", "Doing a locale thing");
             db.setLocale(Locale.getDefault());
-            db.setVersion(1);
+            Log.d("dbCheck", "setVersion");
+            /*** Removed this part as it seemed to cause an error ***/
+            //db.setVersion(1);
+            Log.d("dbCheck", "Completed");
 
         }catch(SQLiteException e){
 
-            Log.e("SQLHelper","Database not Found!");
+            Log.e("SQLHelper","Database not Found! HIYA");
 
         }
 
@@ -151,8 +158,8 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
         db.close();
     }
 
-    public InitiativeDB findName(String name) {
-        String query = "Select * FROM " + TBL_INITIATIVE + " WHERE " + COL_NAME+ " =  \"" + name + "\"";
+    public InitiativeDB findCombatant(String ID) {
+        String query = "Select * FROM " + TBL_INITIATIVE + " WHERE " + COL_COMBATANTID + " =  \"" + ID + "\"";
 
         SQLiteDatabase db = this.getReadableDatabase();
 
@@ -194,5 +201,10 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
         db.close();
         return result;
     }
-}
 
+    public long CountDatabase() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        long value = DatabaseUtils.queryNumEntries(db, TBL_INITIATIVE);
+        return value;
+    }
+}
