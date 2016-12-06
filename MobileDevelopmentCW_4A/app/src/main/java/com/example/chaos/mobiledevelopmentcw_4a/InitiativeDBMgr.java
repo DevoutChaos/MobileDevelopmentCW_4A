@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 /**
@@ -21,14 +22,16 @@ import java.util.Locale;
 
 public class InitiativeDBMgr extends SQLiteOpenHelper {
 
+    MainMenu godCode;
+
     private static final int DB_VER = 1;
     private static final String DB_PATH = "/data/data/com.example.chaos.mobiledevelopmentcw_4a/databases/";
     private static final String DB_NAME = "initiative.s3db";
-    private static final String TBL_INITIATIVE = "intitiatives";
+    private static final String TBL_INITIATIVE = "TBL_INITIATIVE";
 
-    public static final String COL_COMBATANTID = "combatantID";
-    public static final String COL_NAME = "name";
-    public static final String COL_INITVALUE= "initValue";
+    public static final String COL_COMBATANTID = "COL_COMBATANTID";
+    public static final String COL_NAME = "COL_NAME";
+    public static final String COL_INITIATIVE= "COL_INITIATIVE";
 
     private final Context appContext;
 
@@ -41,7 +44,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
 
-        String CREATE_INITIATIVE_TABLE = "CREATE TABLE IF NOT EXISTS " + TBL_INITIATIVE + "(" + COL_COMBATANTID+ " INTEGER PRIMARY KEY," + COL_NAME + " TEXT," + COL_INITVALUE + ")";
+        String CREATE_INITIATIVE_TABLE = "CREATE TABLE IF NOT EXISTS " + TBL_INITIATIVE + "(" + COL_COMBATANTID+ " INTEGER PRIMARY KEY," + COL_NAME + " TEXT," + COL_INITIATIVE + ")";
         db.execSQL(CREATE_INITIATIVE_TABLE);
 
     }
@@ -61,20 +64,17 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
     public void dbCreate() throws IOException {
 
         boolean dbExist = dbCheck();
-
+        Log.d("dbExist", "dbExist = " + dbExist);
         if(!dbExist){
             //By calling this method an empty database will be created into the default system path
             //of your application so we can overwrite that database with our database.
             this.getReadableDatabase();
 
             try {
-
+                Log.d("dbCopy", "Trying to copy DB");
                 copyDBFromAssets();
-
             } catch (IOException e) {
-
                 throw new Error("Error copying database");
-
             }
         }
 
@@ -91,24 +91,19 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
         try{
             String dbPath = DB_PATH + DB_NAME;
             Log.d("dbCheck", "Trying to find: " + dbPath);
-            db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READONLY);
+            db = SQLiteDatabase.openDatabase(dbPath, null, SQLiteDatabase.OPEN_READWRITE);
             Log.d("dbCheck", "Doing a locale thing");
             db.setLocale(Locale.getDefault());
             Log.d("dbCheck", "setVersion");
-            /*** Removed this part as it seemed to cause an error ***/
-            //db.setVersion(1);
+            db.setVersion(1);
             Log.d("dbCheck", "Completed");
-
         }catch(SQLiteException e){
-
             Log.e("SQLHelper","Database not Found! HIYA");
-
         }
 
         if(db != null){
-
+            Log.d("dbCheck", "Closing " + DB_NAME);
             db.close();
-
         }
 
         return db != null ? true : false;
@@ -127,6 +122,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
 
         try {
 
+            Log.d("dbCopy", "Beginning to copy " + dbFileName);
             dbInput = appContext.getAssets().open(DB_NAME);
             dbOutput = new FileOutputStream(dbFileName);
             //transfer bytes from the dbInput to the dbOutput
@@ -139,6 +135,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
             dbOutput.flush();
             dbOutput.close();
             dbInput.close();
+            Log.d("dbCopy", "Finished copying " + DB_NAME);
         } catch (IOException e)
         {
             throw new Error("Problems copying DB!");
@@ -150,7 +147,7 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
 
         ContentValues values = new ContentValues();
         values.put(COL_NAME, combatantInfo.getName());
-        values.put(COL_INITVALUE, combatantInfo.getInitValue());
+        values.put(COL_INITIATIVE, combatantInfo.getInitValue());
 
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -204,7 +201,32 @@ public class InitiativeDBMgr extends SQLiteOpenHelper {
 
     public long CountDatabase() {
         SQLiteDatabase db = this.getReadableDatabase();
-        long value = DatabaseUtils.queryNumEntries(db, TBL_INITIATIVE);
+
+        long value = DatabaseUtils.longForQuery(db, "SELECT COUNT(*) FROM TBL_INITIATIVE", null);
         return value;
+    }
+
+    public ArrayList<String> GetNameInDB(long noInDB)
+    {
+        ArrayList<String> combatantNameLst = new ArrayList<>();
+        for (int i = 0; i < noInDB; i++)
+        {
+            InitiativeDB tempComb;
+            Log.d("ID No: ", Integer.toString(i+1));
+            tempComb = findCombatant(Integer.toString(i+1));
+            combatantNameLst.add(tempComb.getName());
+        }
+        return combatantNameLst;
+    }
+    public ArrayList<Integer> GetInitInDB(long noInDB)
+    {
+        ArrayList<Integer> combatantInitLst = new ArrayList<>();
+        for (int i = 0; i < noInDB; i++)
+        {
+            InitiativeDB tempComb;
+            tempComb = findCombatant(Integer.toString(i+1));
+            combatantInitLst.add(tempComb.getInitValue());
+        }
+        return combatantInitLst;
     }
 }

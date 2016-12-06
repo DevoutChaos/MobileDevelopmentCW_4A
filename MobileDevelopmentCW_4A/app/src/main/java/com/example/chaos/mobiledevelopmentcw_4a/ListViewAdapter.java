@@ -61,7 +61,7 @@ public class ListViewAdapter extends BaseAdapter{
     private class ViewHolder
     {
         /*** Declarations (UI) ***/
-        TextView txtName/*, txtPasPer*/;
+        TextView txtName;
         EditText txtInitiative;
     }
 

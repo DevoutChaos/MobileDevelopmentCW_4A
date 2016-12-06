@@ -34,8 +34,10 @@ public class MainMenu extends AppCompatActivity{
      * Declarations (UI)
      ***/
     Button but1, but2, but5, but6, but8, but9, but10, but11, but12, but13;
-    ListView lstVw1;
+    ListView lstVw1, lstVwDB, lstVwRSS;
     ListViewAdapter lstVwAda;
+    DBListViewAdapter lstVwAda2;
+    RSSListViewAdapter lstVwAda3;
     EditText name, init, txtInit;
     TextView txtName, txtRSSLoc;
     private ViewFlipper switcher;
@@ -45,17 +47,21 @@ public class MainMenu extends AppCompatActivity{
      ***/
     public ArrayList<String> nameLst = new ArrayList<>();
     public ArrayList<Integer> initLst = new ArrayList<>();
-    public ArrayList<Integer> pasPerLst = new ArrayList<>();
     public ArrayList<String> tempNameLst = new ArrayList<>();
     public ArrayList<Integer> tempInitLst = new ArrayList<>();
+    public ArrayList<Integer> combatantIDLst = new ArrayList<>();
+    public ArrayList<String> combatantNameLst = new ArrayList<>();
+    public ArrayList<Integer> combatantInitLst = new ArrayList<>();
+    public ArrayList<String> titleLst = new ArrayList<>();
+    public ArrayList<String> descLst = new ArrayList<>();
 
 
     /***
      * Declarations (Variables)
      ***/
-    static String[] nameArr;
+    static String[] nameArr, combNameArr, titleArr, descArr;
     String[] tempNameArr;
-    static Integer[] initArr, tempInitArr;
+    static Integer[] initArr, tempInitArr, combInitArr;
     int count;
     long noInDB;
     private String tempName;
@@ -64,7 +70,7 @@ public class MainMenu extends AppCompatActivity{
     /***
      * Declarations (Database)
      ***/
-    InitiativeDB userInitiatives;
+    InitiativeDB userInitiatives, init1;
 
     /***
      * Declarations (Other)
@@ -88,7 +94,9 @@ public class MainMenu extends AppCompatActivity{
         /*** Resets the lists ***/
         nameLst.clear();
         initLst.clear();
-        pasPerLst.clear();
+        combatantIDLst.clear();
+        combatantNameLst.clear();
+        combatantInitLst.clear();
 
         /*** Sets up all UI components ***/
         switcher = (ViewFlipper) findViewById(R.id.ViewFlipper);
@@ -108,11 +116,12 @@ public class MainMenu extends AppCompatActivity{
         name = (EditText) findViewById(R.id.editName);
         init = (EditText) findViewById(R.id.editInitiative);
         lstVw1 = (ListView) findViewById(R.id.mainListView);
+        lstVwDB = (ListView) findViewById(R.id.dbListView);
+        lstVwRSS = (ListView) findViewById(R.id.saListView);
 
         /*** Load any saved preferences ***/
         initSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         loadSavedPreferences();
-        Log.e("n","SDOutput msg");
 
         /***Shared Preferences ***/
         mySharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -136,10 +145,12 @@ public class MainMenu extends AppCompatActivity{
             }
         });
 
-        /*** Database handler ***/
+        /***
+         * Database handler
+         ***/
         userInitiatives = new InitiativeDB();
 
-        final InitiativeDBMgr dbInitMgr = new InitiativeDBMgr(this,"initiative.s3db",null,1); // Lab 5
+        final InitiativeDBMgr dbInitMgr = new InitiativeDBMgr(this,"initiative.s3db",null,1);
         try {
             dbInitMgr.dbCreate();
         } catch (IOException e) {
@@ -149,17 +160,7 @@ public class MainMenu extends AppCompatActivity{
 
         userInitiatives = dbInitMgr.findCombatant(userInitiatives.getName());
 
-        /*** Parse the RSS feed ***/
-        saRSSDataItem sageAdvice = new saRSSDataItem(); // Lab 6
-        String RSSFeedURL = "http://www.sageadvice.eu/feed/";
-        saAsyncRSSParser rssAsyncParse = new saAsyncRSSParser(this,RSSFeedURL);
-        try {
-            sageAdvice = rssAsyncParse.execute("").get(); // Lab 6
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
+        ParseOnly();
 
         /*** Return to Home Screen ***/
         but1.setOnClickListener(new View.OnClickListener() {
@@ -225,6 +226,11 @@ public class MainMenu extends AppCompatActivity{
             public void onClick(View view) {
                 switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.DatabaseView)));
                 noInDB = dbInitMgr.CountDatabase();
+                combatantIDLst.clear();
+                combatantNameLst.clear();
+                combatantInitLst.clear();
+                combatantNameLst = dbInitMgr.GetNameInDB(noInDB);
+                combatantInitLst = dbInitMgr.GetInitInDB(noInDB);
                 ShowDB();
             }
         });
@@ -245,11 +251,13 @@ public class MainMenu extends AppCompatActivity{
             }
         });
 
-        /*** Returns to the main menu from the initiative tracker ***/
+        /*** Goes to the RSS view from the Main Menu ***/
         but13.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.RSSView)));
+                PrepForArraysRSS();
+                AddToArraysRSS();
             }
         });
     }
@@ -363,7 +371,6 @@ public class MainMenu extends AppCompatActivity{
             for (int x = 0; x < len2; x++) {
                 if (initLst.get(x) == tempInitArr[i]) {
                     tempNameLst.add(nameLst.get(x));
-
                     initLst.remove(x);
                     nameLst.remove(x);
 
@@ -382,11 +389,63 @@ public class MainMenu extends AppCompatActivity{
 
     private void loadSavedPreferences()
     {
-        txtRSSLoc.setText(txtRSSLoc.getText() + initSharedPrefs.getString("init_RSSFeed", "https://www.reddit.com/r/DnD.rss"));
+        txtRSSLoc.setText(txtRSSLoc.getText() + initSharedPrefs.getString("init_RSSFeed", "www.sageadvice.eu/feed"));
     }
 
+    /***
+     * Outputs the number of records, and displays them sans ID
+     ***/
     public void ShowDB()
     {
-        Toast.makeText(this, "Database holds " + count + " records", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Database holds " + noInDB + " records", Toast.LENGTH_SHORT).show();
+        PrepForArraysDB();
+        AddToArraysDB();
+    }
+
+    /***
+     * Places all of the ArrayList data into Arrays
+     ***/
+    public void PrepForArraysDB()
+    {
+        /*** Overwrites arrays with List data ***/
+        combNameArr = combatantNameLst.toArray(new String[0]);
+        combInitArr = combatantInitLst.toArray(new Integer[0]);
+    }
+
+    /***
+     * Calls for the arrays to be displayed in the DBListViewAdapter
+     ***/
+    public void AddToArraysDB()
+    {
+        lstVwAda2 = new com.example.chaos.mobiledevelopmentcw_4a.DBListViewAdapter(this, combNameArr, combInitArr, combatantNameLst, combatantInitLst);
+        lstVwDB.setAdapter(lstVwAda2);
+    }
+    public void ParseOnly()
+    {
+        /***
+         * Parse the RSS feed
+         ***/
+        saRSSDataItem sageAdvice = new saRSSDataItem();
+        String RSSFeedURL = "http://www.sageadvice.eu/feed/";
+        saAsyncRSSParser rssAsyncParse = new saAsyncRSSParser(this,RSSFeedURL);
+        try {
+            sageAdvice = rssAsyncParse.execute("").get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void PrepForArraysRSS()
+    {
+        titleArr = saRSSParser.titleLst.toArray(new String[0]);
+        descArr = saRSSParser.descLst.toArray(new String[0]);
+    }
+
+    public void AddToArraysRSS()
+    {
+        lstVwAda3 = new com.example.chaos.mobiledevelopmentcw_4a.RSSListViewAdapter(this, titleArr, descArr, titleLst, descLst);
+        lstVwRSS.setAdapter(lstVwAda3);
     }
 }

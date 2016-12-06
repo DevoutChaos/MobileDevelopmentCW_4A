@@ -13,6 +13,8 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by rla on 22/10/2016.
@@ -20,6 +22,14 @@ import java.net.URL;
 
 public class saRSSParser {
     private saRSSDataItem RSSDataItem;
+    private String title, description;
+
+    private boolean firstDesc = false;
+    private boolean firstTitle = false;
+    private boolean secondTitle = false;
+
+    public static List<String> titleLst = new ArrayList<>();
+    public static List<String> descLst = new ArrayList<>();
 
     public saRSSParser()
     {
@@ -52,6 +62,8 @@ public class saRSSParser {
 
     public void parseRSSDataItem(XmlPullParser theParser, int theEventType)
     {
+        titleLst.clear();
+        descLst.clear();
         try
         {
             while (theEventType != XmlPullParser.END_DOCUMENT)
@@ -62,19 +74,45 @@ public class saRSSParser {
                     // Check which Tag has been found
                     if (theParser.getName().equalsIgnoreCase("title"))
                     {
-                        // Now just get the associated text
-                        String temp = theParser.nextText();
-                        // store data in class
-                        RSSDataItem.setItemTitle(temp);
+                        if (firstTitle && secondTitle) {
+
+                            // Now just get the associated text
+                            String temp = theParser.nextText();
+                            // store data in class
+                            //RSSDataItem.setItemTitle(temp);
+                            Log.d("titles: ", temp);
+                            title = temp;
+                            titleLst.add(title);
+                        }
+                        else if (firstTitle){
+                            secondTitle = true;
+                        }
+                        else
+                        {
+                            firstTitle = true;
+                        }
                     }
                     else
                         // Check which Tag we have
                         if (theParser.getName().equalsIgnoreCase("description"))
                         {
-                            // Now just get the associated text
-                            String temp = theParser.nextText();
-                            // store data in class
-                            RSSDataItem.setItemDesc(temp);
+                            if (firstDesc) {
+                                // Now just get the associated text
+                                String temp = theParser.nextText();
+                                // store data in class
+                                //RSSDataItem.setItemDesc(temp);
+                                Log.d("descs: ", temp);
+                                description = temp;
+                                description = description.replaceAll("&#39;", "'");
+                                description = description.replaceAll("&#34;", "\"");
+                                description = description.replaceAll("&#8212;", "\n");
+                                description = description.replaceAll("&#8230;", "...");
+                                descLst.add(description);
+                            }
+                            else
+                            {
+                                firstDesc = true;
+                            }
                         }
                         else
                             // Check which Tag we have
