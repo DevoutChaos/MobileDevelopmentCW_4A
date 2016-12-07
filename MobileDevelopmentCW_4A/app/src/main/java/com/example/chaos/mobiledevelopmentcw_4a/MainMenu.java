@@ -2,7 +2,9 @@ package com.example.chaos.mobiledevelopmentcw_4a;
 
 import android.app.DialogFragment;
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.database.DatabaseUtils;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -162,6 +164,8 @@ public class MainMenu extends AppCompatActivity{
 
         ParseOnly();
 
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+
         /*** Return to Home Screen ***/
         but1.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -281,6 +285,11 @@ public class MainMenu extends AppCompatActivity{
             case R.id.action_settings:
                 switcher.setDisplayedChild(switcher.indexOfChild(findViewById(R.id.PrefsView)));
                 return true;
+            case R.id.mBio:
+                Intent mcBioDraw = new Intent(this, canvasActivity.class);
+                this.startActivity(mcBioDraw);
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }

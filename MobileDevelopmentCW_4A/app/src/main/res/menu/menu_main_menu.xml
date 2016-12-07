@@ -11,5 +11,10 @@
         android:icon="@drawable/ic_about"
         app:showAsAction="ifRoom|withText"
         android:title="@string/menu_about" />
+    <item android:id="@+id/mBio"
+        android:icon="@drawable/ic_action_trend"
+        android:title="@string/mBio"
+        app:showAsAction="ifRoom|withText"/>
+
 
 </menu>
